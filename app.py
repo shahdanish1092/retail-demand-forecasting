@@ -24,6 +24,7 @@ st.set_page_config(
 
 # ─── Paths ────────────────────────────────────────────────────────────────────
 RAW_DIR = Path("data/raw")
+SAMPLE_DIR = Path("data/sample")
 MODEL_PATH = Path("model/latest.joblib")
 
 # ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -40,14 +41,22 @@ def _load_pipeline():
 def _load_store():
     from retail_demand.data.ingestion import RawDataPaths, load_store
 
-    return load_store(RawDataPaths(RAW_DIR))
+    if (RAW_DIR / "store.csv").exists():
+        return load_store(RawDataPaths(RAW_DIR))
+    elif (SAMPLE_DIR / "store.csv").exists():
+        return pd.read_csv(SAMPLE_DIR / "store.csv")
+    raise FileNotFoundError("Store metadata not found in data/raw or data/sample")
 
 
-@st.cache_data(show_spinner="Loading sample history…")
+@st.cache_data(show_spinner="Loading history for lag/rolling features…")
 def _load_history():
     from retail_demand.data.ingestion import RawDataPaths, load_train
 
-    return load_train(RawDataPaths(RAW_DIR))
+    if (RAW_DIR / "train.csv").exists():
+        return load_train(RawDataPaths(RAW_DIR))
+    elif (SAMPLE_DIR / "train_sample.csv").exists():
+        return pd.read_csv(SAMPLE_DIR / "train_sample.csv", parse_dates=["Date"])
+    raise FileNotFoundError("Historical sales data not found in data/raw or data/sample")
 
 
 def _model_available() -> bool:
@@ -55,7 +64,9 @@ def _model_available() -> bool:
 
 
 def _data_available() -> bool:
-    return (RAW_DIR / "train.csv").exists() and (RAW_DIR / "store.csv").exists()
+    has_raw = (RAW_DIR / "train.csv").exists() and (RAW_DIR / "store.csv").exists()
+    has_sample = (SAMPLE_DIR / "train_sample.csv").exists() and (SAMPLE_DIR / "store.csv").exists()
+    return has_raw or has_sample
 
 
 # ─── Sidebar ──────────────────────────────────────────────────────────────────
@@ -68,7 +79,7 @@ st.sidebar.markdown(
 **Baseline WAPE:** `0.2087`  
 
 ---
-[GitHub](https://github.com/your-username/retail-demand-forecasting)
+[GitHub Repository](https://github.com/shahdanish1092/retail-demand-forecasting)
 """
 )
 
@@ -111,15 +122,20 @@ with tabs[0]:
     target_df: pd.DataFrame | None = None
 
     if source == "Sample data (test.csv)":
-        test_path = RAW_DIR / "test.csv"
-        if test_path.exists():
+        if (RAW_DIR / "test.csv").exists():
+            test_path = RAW_DIR / "test.csv"
+        elif (SAMPLE_DIR / "test_sample.csv").exists():
+            test_path = SAMPLE_DIR / "test_sample.csv"
+        else:
+            test_path = None
+
+        if test_path is not None:
             target_df = pd.read_csv(test_path, parse_dates=["Date"])
             target_df["Open"] = target_df["Open"].fillna(1).astype(int)
-            st.info(f"Loaded **{len(target_df):,}** rows from `{test_path}`.")
+            st.info(f"Loaded **{len(target_df):,}** sample rows from `{test_path.name}`.")
         else:
             st.error(
-                "`data/raw/test.csv` not found. "
-                "Add the Rossmann CSV files to `data/raw/` or upload your own CSV below."
+                "Sample test data not found. Upload your own CSV below."
             )
     else:
         uploaded = st.file_uploader(
