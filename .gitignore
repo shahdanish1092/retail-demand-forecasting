@@ -1,0 +1,29 @@
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.egg-info/
+
+# Raw data CSVs (download from Kaggle)
+data/raw/*.csv
+
+# Saved model artifacts (track latest.joblib for cloud demo deployments)
+# model/*.joblib (uncomment if using remote storage like S3/DVC)
+
+# Kaggle submissions
+submissions/
+
+# MLflow tracking
+mlflow.db
+mlruns/
+
+# Coverage reports
+.coverage
+coverage.xml
+htmlcov/
+
+# IDE / OS
+.idea/
+.vscode/
+*.DS_Store
+Thumbs.db

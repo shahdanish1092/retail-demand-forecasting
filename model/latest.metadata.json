@@ -1,0 +1,43 @@
+{
+  "model": "HistGradientBoostingRegressor",
+  "holdout_days": 42,
+  "train_open_rows": 804110,
+  "holdout_open_rows": 40282,
+  "numeric_features": [
+    "DayOfWeek",
+    "Promo",
+    "SchoolHoliday",
+    "CompetitionDistance",
+    "Promo2",
+    "year",
+    "month",
+    "day",
+    "week_of_year",
+    "is_month_start",
+    "is_month_end",
+    "competition_open_months",
+    "promo2_active",
+    "sales_lag_7",
+    "sales_lag_14",
+    "sales_lag_28",
+    "sales_rolling_mean_7",
+    "sales_rolling_std_7",
+    "sales_rolling_mean_28",
+    "sales_rolling_std_28"
+  ],
+  "categorical_features": [
+    "Store",
+    "StateHoliday",
+    "StoreType",
+    "Assortment"
+  ],
+  "metrics": {
+    "mae": 879.1703373930491,
+    "wape": 0.1259802171821248
+  },
+  "baseline_to_beat": {
+    "name": "pred_store_mean",
+    "wape": 0.208699072533352
+  },
+  "beats_current_best_baseline": true
+}

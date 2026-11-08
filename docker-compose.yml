@@ -1,0 +1,30 @@
+version: "3.9"
+
+services:
+  app:
+    build: .
+    image: retail-demand:latest
+    ports:
+      - "8501:8501"
+    volumes:
+      # Mount local data/raw CSVs into the container (read-only)
+      - ./data/raw:/app/data/raw:ro
+      # Mount model directory (read-write so the container can save a model)
+      - ./model:/app/model
+      # Persist MLflow runs outside the container
+      - ./mlruns:/app/mlruns
+    environment:
+      - MLFLOW_TRACKING_URI=sqlite:///mlflow.db
+    restart: unless-stopped
+
+  # Optional: run the full training pipeline and exit
+  train:
+    build: .
+    image: retail-demand:latest
+    volumes:
+      - ./data/raw:/app/data/raw:ro
+      - ./model:/app/model
+      - ./mlruns:/app/mlruns
+    command: retail-demand train --raw-dir data/raw --model-path model/latest.joblib
+    profiles:
+      - train

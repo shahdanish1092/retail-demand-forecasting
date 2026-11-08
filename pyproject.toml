@@ -1,0 +1,58 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "retail-demand-forecasting"
+version = "0.1.0"
+description = "Production-style retail demand forecasting project using Rossmann store sales data."
+requires-python = ">=3.11"
+dependencies = [
+    "pandas>=2.2",
+    "numpy>=1.26",
+    "scikit-learn>=1.5",
+    "lightgbm>=4.5",
+    "mlflow>=2.8",
+    "joblib>=1.3",
+]
+
+[project.optional-dependencies]
+app = [
+    "streamlit>=1.38",
+    "plotly>=5.22",
+    "altair>=5.3",
+]
+test = [
+    "pytest>=8.0",
+    "pytest-cov>=5.0",
+    "ruff>=0.4",
+]
+all = [
+    "retail-demand-forecasting[app,test]",
+]
+
+[project.scripts]
+inspect-raw-data   = "retail_demand.data.cli:main"
+run-baselines      = "retail_demand.modeling.cli:main"
+build-features     = "retail_demand.features.cli:main"
+train-model        = "retail_demand.modeling.train_cli:main"
+analyze-model-errors = "retail_demand.modeling.error_cli:main"
+tune-model         = "retail_demand.modeling.tune_cli:main"
+evaluate-lightgbm  = "retail_demand.modeling.lightgbm_cli:main"
+evaluate-quantiles = "retail_demand.modeling.quantile_cli:main"
+generate-forecast  = "retail_demand.modeling.inference_cli:main"
+retail-demand      = "retail_demand.__main__:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts   = "-q --tb=short"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
